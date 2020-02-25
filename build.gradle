@@ -22,8 +22,8 @@ dependencies {
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 	compile group: 'org.springframework', name: 'spring-websocket', version: '4.2.4.RELEASE'
 	compile group: 'org.springframework', name: 'spring-messaging', version: '4.2.4.RELEASE'
-	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.7.3'
-	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.3'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.4'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
 }
 
 test {
