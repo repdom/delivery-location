@@ -16,16 +16,15 @@ import netscape.javascript.JSObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParseException;
 import org.springframework.boot.json.JsonParser;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLSession;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 
@@ -40,8 +39,8 @@ public class PosQantityLocation {
         return puntoDeVentaRepository.findAll();
     }
 
-    @PostMapping("/closestPos")
-    public ProductLocalityDao[] getclosestPost(@RequestBody NearLocationDao nearLocationDao) {
+    @PostMapping("/closestPosLatLng")
+    public ResponseEntity<DataResponse> getclosestPost(@RequestBody NearLocationDao nearLocationDao) {
         List<PuntoDeVenta> puntos = puntoDeVentaRepository.findAll();
         ProductLocalityDao[] productoLocalidad = new ProductLocalityDao[puntos.size()];
 
@@ -81,10 +80,7 @@ public class PosQantityLocation {
             productoLocalidad[i] = productLocalityDao;
             i += 1;
         }
-        PuntoDeVenta[] puntosOrdenados = new PuntoDeVenta[puntos.size()];
-        for(int k = 0; k < puntos.size(); k++) {
-            puntosOrdenados[k] = puntos.get(k);
-        }
+
         for (int i2 = 0; i2 < productoLocalidad.length; i2++) {
             for (int j = 0; j < productoLocalidad.length; j++) {
                 if (((ProductLocalityDao) productoLocalidad[i2]).getDistance() < ((ProductLocalityDao) productoLocalidad[j]).getDistance()) {
@@ -96,11 +92,16 @@ public class PosQantityLocation {
         }
 
         // JsonParser jsonParser = new JsonParser()
-        return productoLocalidad;
+        DataResponse dataResponse = new DataResponse(HttpStatus.OK, "Success", productoLocalidad);
+
+        //  httpResponse = new HttpResponse<ProductLocalityDao>(productoLocalidad);
+        // JsonParser jsonParser = new JsonParser()
+        // new ResponseBody<ProductLocalityDao[]>(productoLocalidad, HttpStatus.OK)
+        return new ResponseEntity<>(dataResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/closestPosLatLng")
-    public ProductLocalityDao[] getclosestPostLatLng(@RequestBody NearPos nearPosDao) {
+    @PostMapping("/closestPos") //closestPos
+    public ResponseEntity<DataResponse> getclosestPostLatLng(@RequestBody NearPos nearPosDao) {
         List<PuntoDeVenta> puntos = puntoDeVentaRepository.findAll();
         Optional<PuntoDeVenta> punto = puntoDeVentaRepository.findById(nearPosDao.getPos());
         ProductLocalityDao[] productoLocalidad = new ProductLocalityDao[puntos.size() - 1];
@@ -149,29 +150,15 @@ public class PosQantityLocation {
                 }
             }
         }
+        // int status, String error, String message, ProductLocalityDao[] productLocalityDaos
+        DataResponse dataResponse = new DataResponse(HttpStatus.OK, "Success", productoLocalidad);
 
+        //  httpResponse = new HttpResponse<ProductLocalityDao>(productoLocalidad);
         // JsonParser jsonParser = new JsonParser()
-        return productoLocalidad;
+        // new ResponseBody<ProductLocalityDao[]>(productoLocalidad, HttpStatus.OK)
+        return new ResponseEntity<>(dataResponse, HttpStatus.OK);
     }
-    /*public static double distance(double lat1, double lat2, double lon1,
-                                  double lon2, double el1, double el2) {
 
-        final int R = 6371; // Radius of the earth
-
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = R * c * 1000; // convert to meters
-
-        double height = el1 - el2;
-
-        distance = Math.pow(distance, 2) + Math.pow(height, 2);
-
-        return Math.sqrt(distance);
-    }*/
     private double distance(double lat1, double lon1, double lat2, double lon2, String unit) {
         if ((lat1 == lat2) && (lon1 == lon2)) {
             return 0;
