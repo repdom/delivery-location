@@ -16,9 +16,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'com.google.code.gson:gson:2.8.6'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	runtimeOnly 'mysql:mysql-connector-java'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 	compile group: 'org.springframework', name: 'spring-websocket', version: '4.2.4.RELEASE'
 	compile group: 'org.springframework', name: 'spring-messaging', version: '4.2.4.RELEASE'
