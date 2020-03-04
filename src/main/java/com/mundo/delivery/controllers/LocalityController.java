@@ -30,5 +30,5 @@ public class LocalityController {
         }
         return nameImages;
     }
-
+    // mongodb://repdom:RDsIdEe1865%40@localhost:27017/AppMensajeria?authSource=AppMensajeria
 }
