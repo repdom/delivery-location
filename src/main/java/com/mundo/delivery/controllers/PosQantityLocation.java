@@ -109,40 +109,43 @@ public class PosQantityLocation {
         String tokenUrl = "http://mundomovil.com.do/mDelivery/GetData.php";
 
         String json = template.exchange(tokenUrl, HttpMethod.POST, entity, String.class).getBody();
-
+        // System.out.printf(json);
         Gson googleJson = new Gson();
         ErpResponsePreproProduct product = googleJson.fromJson(json, ErpResponsePreproProduct.class);
-
-
-        for (PuntoDeVenta puntoDeVenta : puntos) {
-            for(PreproProduct data: product.getData()) {
-                if ((data.getPos_id().equals(String.valueOf(puntoDeVenta.getCodigo()))) && !puntoDeVenta.getCodigo().equals(nearPosDao.getPos())) {
-                    double d = distance(Double.parseDouble(punto.get().getLatitude()), Double.parseDouble(punto.get().getLongitude()),
-                                        Double.parseDouble(puntoDeVenta.getLatitude()), Double.parseDouble(puntoDeVenta.getLongitude()), "K");
-                    ProductLocalityDao productLocalityDao = new ProductLocalityDao(
-                            puntoDeVenta.getCodigo(),
-                            puntoDeVenta.getDescripcion(),
-                            puntoDeVenta.getLongitude(),
-                            puntoDeVenta.getLatitude(),
-                            data.getCodarticulo(),
-                            data.getExistencia(),
-                            d
-                    );
-                    productLocalityDaos.add(productLocalityDao);
-                    break;
+        DataResponse dataResponse;
+        if (product.getData() == null) {
+            dataResponse = new DataResponse(HttpStatus.ACCEPTED, "No hay datos disponibles", new ProductLocalityDao[0]);
+        } else {
+            for (PuntoDeVenta puntoDeVenta : puntos) {
+                for(PreproProduct data: product.getData()) {
+                    if ((data.getPos_id().equals(String.valueOf(puntoDeVenta.getCodigo()))) && !puntoDeVenta.getCodigo().equals(nearPosDao.getPos())) {
+                        double d = distance(Double.parseDouble(punto.get().getLatitude()), Double.parseDouble(punto.get().getLongitude()),
+                                Double.parseDouble(puntoDeVenta.getLatitude()), Double.parseDouble(puntoDeVenta.getLongitude()), "K");
+                        ProductLocalityDao productLocalityDao = new ProductLocalityDao(
+                                puntoDeVenta.getCodigo(),
+                                puntoDeVenta.getDescripcion(),
+                                puntoDeVenta.getLongitude(),
+                                puntoDeVenta.getLatitude(),
+                                data.getCodarticulo(),
+                                data.getExistencia(),
+                                d
+                        );
+                        productLocalityDaos.add(productLocalityDao);
+                        break;
+                    }
                 }
             }
+
+            productLocalityDaos.sort((p1, p2) -> (int) (p1.getDistance() - p2.getDistance()));
+            ProductLocalityDao[] products = new ProductLocalityDao[productLocalityDaos.size()];
+            int y = 0;
+            for(ProductLocalityDao p : productLocalityDaos) {
+                products[y] = p;
+                y++;
+            }
+            dataResponse = new DataResponse(HttpStatus.OK, "Success", products);
         }
 
-        productLocalityDaos.sort((p1, p2) -> (int) (p1.getDistance() - p2.getDistance()));
-        ProductLocalityDao[] products = new ProductLocalityDao[productLocalityDaos.size()];
-        int y = 0;
-        for(ProductLocalityDao p : productLocalityDaos) {
-            products[y] = p;
-            y++;
-        }
-
-        DataResponse dataResponse = new DataResponse(HttpStatus.OK, "Success", products);
 
         return new ResponseEntity<>(dataResponse, HttpStatus.OK);
     }
